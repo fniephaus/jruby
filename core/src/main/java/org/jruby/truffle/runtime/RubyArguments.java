@@ -16,6 +16,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import org.jruby.truffle.runtime.core.RubyProc;
 import org.jruby.truffle.runtime.methods.MethodLike;
 import org.jruby.truffle.runtime.util.ArrayUtils;
+import org.jruby.truffle.translator.MarkerNode;
 
 import java.util.Arrays;
 
@@ -28,7 +29,8 @@ public final class RubyArguments {
     public static final int DECLARATION_FRAME_INDEX = 1;
     public static final int SELF_INDEX = 2;
     public static final int BLOCK_INDEX = 3;
-    public static final int RUNTIME_ARGUMENT_COUNT = 4;
+    public static final int COUNT_KWARGS_INDEX = 4;
+    public static final int RUNTIME_ARGUMENT_COUNT = 5;
 
     public static Object[] pack(MethodLike method, MaterializedFrame declarationFrame, Object self, RubyProc block, Object[] arguments) {
         final Object[] packed = new Object[arguments.length + RUNTIME_ARGUMENT_COUNT];
@@ -37,6 +39,16 @@ public final class RubyArguments {
         packed[DECLARATION_FRAME_INDEX] = declarationFrame;
         packed[SELF_INDEX] = self;
         packed[BLOCK_INDEX] = block;
+        
+        packed[COUNT_KWARGS_INDEX] = 0;
+        for (int i = 0; i < arguments.length; ++i) {
+        	Object o = arguments[i];
+        	
+        	if (o == MarkerNode.getMarker()) {
+        		packed[COUNT_KWARGS_INDEX] = i;
+        	}
+        }
+        
         arraycopy(arguments, 0, packed, RUNTIME_ARGUMENT_COUNT, arguments.length);
 
         return packed;
@@ -78,11 +90,24 @@ public final class RubyArguments {
     }
 
     public static int getUserArgumentsCount(Object[] internalArguments) {
-        return internalArguments.length - RUNTIME_ARGUMENT_COUNT;
+        //return internalArguments.length - RUNTIME_ARGUMENT_COUNT;
+    	int countKwArgs = (int) internalArguments[COUNT_KWARGS_INDEX];
+    	
+    	if (countKwArgs == 0) {
+    		return internalArguments.length - RUNTIME_ARGUMENT_COUNT;
+    	} else {
+    		return countKwArgs - RUNTIME_ARGUMENT_COUNT + 1;
+    	}
     }
 
     public static Object getUserArgument(Object[] internalArguments, int index) {
-        return internalArguments[RUNTIME_ARGUMENT_COUNT + index];
+    	int countKwArgs = (int) internalArguments[COUNT_KWARGS_INDEX];
+    	
+    	if (countKwArgs == 0) {
+    		return internalArguments[RUNTIME_ARGUMENT_COUNT + index];
+    	} else {
+    		return null;
+    	}
     }
 
     public static MaterializedFrame getDeclarationFrame(Object[] arguments) {

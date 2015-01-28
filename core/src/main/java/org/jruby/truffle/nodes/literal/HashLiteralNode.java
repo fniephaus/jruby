@@ -29,6 +29,10 @@ public abstract class HashLiteralNode extends RubyNode {
     @Child protected CallDispatchHeadNode dupNode;
     @Child protected CallDispatchHeadNode freezeNode;
 
+    public RubyNode[] getKeyValues() {
+    	return keyValues;
+    }
+    
     protected HashLiteralNode(RubyContext context, SourceSection sourceSection, RubyNode[] keyValues) {
         super(context, sourceSection);
         assert keyValues.length % 2 == 0;

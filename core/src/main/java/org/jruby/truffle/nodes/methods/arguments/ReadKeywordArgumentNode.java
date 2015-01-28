@@ -10,7 +10,9 @@
 package org.jruby.truffle.nodes.methods.arguments;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.source.SourceSection;
+
 import org.jruby.truffle.nodes.RubyNode;
 import org.jruby.truffle.runtime.RubyArguments;
 import org.jruby.truffle.runtime.RubyContext;
@@ -32,8 +34,9 @@ public class ReadKeywordArgumentNode extends RubyNode {
     }
 
     @Override
+    @ExplodeLoop
     public Object execute(VirtualFrame frame) {
-        notDesignedForCompilation();
+        //notDesignedForCompilation();
 
         final RubyHash hash = getKeywordsHash(frame);
 

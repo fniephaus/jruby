@@ -623,6 +623,16 @@ public class BodyTranslator extends Translator {
             argumentsTranslated.add(extraArgument);
         }
 
+        RubyNode last = argumentsTranslated.get(argumentsTranslated.size() - 1);
+        if (last instanceof HashLiteralNode) {
+        	argumentsTranslated.remove(argumentsTranslated.size() - 1);
+        	HashLiteralNode hashNode = (HashLiteralNode) last;
+        	argumentsTranslated.add(new MarkerNode(context, sourceSection));
+        	for (RubyNode n : hashNode.getKeyValues()) {
+        		argumentsTranslated.add(n);
+        	}
+        }
+        
         final RubyNode[] argumentsTranslatedArray = argumentsTranslated.toArray(new RubyNode[argumentsTranslated.size()]);
 
         return new ArgumentsAndBlockTranslation(blockTranslated, argumentsTranslatedArray, isSplatted);
