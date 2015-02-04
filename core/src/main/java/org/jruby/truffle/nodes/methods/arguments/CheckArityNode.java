@@ -44,7 +44,7 @@ public class CheckArityNode extends RubyNode {
     @Override
     public void executeVoid(VirtualFrame frame) {
         final int given;
-
+        /*
         if (RubyArguments.isKwOptimized(frame.getArguments())) {
         	given = RubyArguments.getUserArgumentsCount(frame.getArguments()) - arity.getCountKeywords() - 2;
         } else {
@@ -63,6 +63,7 @@ public class CheckArityNode extends RubyNode {
                 }
             }
         }
+        */
     }
 
     private boolean checkArity(VirtualFrame frame, int given) {

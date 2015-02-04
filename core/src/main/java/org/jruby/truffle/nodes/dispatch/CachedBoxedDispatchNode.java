@@ -22,6 +22,8 @@ import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import org.jruby.truffle.nodes.RubyNode;
+import org.jruby.truffle.nodes.literal.BooleanLiteralNode;
+import org.jruby.truffle.nodes.literal.FixnumLiteralNode;
 import org.jruby.truffle.nodes.literal.HashLiteralNode;
 import org.jruby.truffle.nodes.literal.ObjectLiteralNode;
 import org.jruby.truffle.nodes.literal.StringLiteralNode;
@@ -42,7 +44,7 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
 
     private final Object value;
 
-    private RubyNode[] argumentNodes = null;
+    @Children private final RubyNode[] argumentNodes;
     
     private final InternalMethod method;
     @Child private DirectCallNode callNode;
@@ -114,7 +116,7 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
         		argumentNodes[i] = next.getHeadNode().getArgumentNodes()[i];
         	}
         	
-        	argumentNodes[i++] = new MarkerNode(context, null);
+        	argumentNodes[i++] = new BooleanLiteralNode(context,null,true);// new MarkerNode(context, null);
         	HashLiteralNode hashNode = (HashLiteralNode) next.getHeadNode().getArgumentNodes()[next.getHeadNode().getArgumentNodes().length - 1];
         	
         	for (String kwarg : kwargs) {
@@ -129,7 +131,9 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
         		}
         	}
         	
-        	argumentNodes[i++] = new MarkerNode(context, null);
+        	argumentNodes[i++] = new BooleanLiteralNode(context,null,true) ;// new MarkerNode(context, null);
+        } else {
+        	argumentNodes = null;
         }
     }
 

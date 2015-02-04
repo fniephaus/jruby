@@ -9,9 +9,12 @@
  */
 package org.jruby.truffle.nodes.methods.arguments;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
+
 import org.jruby.truffle.nodes.RubyNode;
+import org.jruby.truffle.nodes.literal.BooleanLiteralNode;
 import org.jruby.truffle.runtime.RubyArguments;
 import org.jruby.truffle.runtime.RubyContext;
 import org.jruby.truffle.runtime.core.RubyHash;
@@ -34,7 +37,9 @@ public class ReadKeywordRestArgumentNode extends RubyNode {
 
     @Override
     public Object execute(VirtualFrame frame) {
-        notDesignedForCompilation();
+       return 12;
+       /*
+    	notDesignedForCompilation();
 
         final RubyHash hash = getKeywordsHash(frame);
 
@@ -55,6 +60,7 @@ public class ReadKeywordRestArgumentNode extends RubyNode {
         }
 
         return HashOperations.verySlowFromEntries(getContext(), entries);
+        */
     }
 
     private RubyHash getKeywordsHash(VirtualFrame frame) {

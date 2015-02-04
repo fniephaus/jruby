@@ -148,7 +148,7 @@ public class LoadArgumentsTranslator extends Translator {
         if (node.getBlock() != null) {
             sequence.add(node.getBlock().accept(this));
         }
-
+        
         return SequenceNode.sequence(context, sourceSection, sequence);
     }
 

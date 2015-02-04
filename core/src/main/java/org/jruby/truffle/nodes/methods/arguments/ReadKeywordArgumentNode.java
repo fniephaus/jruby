@@ -41,51 +41,8 @@ public class ReadKeywordArgumentNode extends RubyNode {
 
     @Override
     public Object execute(VirtualFrame frame) {
-    	if (RubyArguments.isKwOptimized(frame.getArguments())) {
-    		return argumentValueProfile.profile(RubyArguments.getOptimizedKeywordArgument(frame.getArguments(), kwIndex));
-    	} else {
-    		return lookupKeywordInHash(frame);
-    	}
-    }
-
-    @TruffleBoundary
-    public Object lookupKeywordInHash(VirtualFrame frame) {
-        notDesignedForCompilation();
-
-        final RubyHash hash = getKeywordsHash(frame);
-
-        if (hash == null) {
-            return defaultValue.execute(frame);
-        }
-
-        Object value = null;
-
-        for (KeyValue keyValue : HashOperations.verySlowToKeyValues(hash)) {
-            if (keyValue.getKey().toString().equals(name)) {
-                value = keyValue.getValue();
-                break;
-            }
-        }
-
-        if (value == null) {
-            return defaultValue.execute(frame);
-        }
-
-        return value;
-    }
-    
-    private RubyHash getKeywordsHash(VirtualFrame frame) {
-        if (RubyArguments.getUserArgumentsCount(frame.getArguments()) <= minimum) {
-            return null;
-        }
-
-        final Object lastArgument = RubyArguments.getUserArgument(frame.getArguments(), RubyArguments.getUserArgumentsCount(frame.getArguments()) - 1);
-
-        if (lastArgument instanceof RubyHash) {
-            return (RubyHash) lastArgument;
-        }
-
-        return null;
+    	return 12;
+    	//return argumentValueProfile.profile(RubyArguments.getOptimizedKeywordArgument(frame.getArguments(), kwIndex));
     }
 
 }
