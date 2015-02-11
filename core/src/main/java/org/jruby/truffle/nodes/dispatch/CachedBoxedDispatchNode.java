@@ -105,18 +105,18 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
         	}
         	
         	List<String> restKeywordLabels = new ArrayList<String>();
-        	for (int j = 0; j < hashNode.getKeyValues().length; j += 2) {
-        		final String label = ((ObjectLiteralNode) hashNode.getKeyValues()[j]).execute(null).toString();
+        	for (int j = 0; j < hashNode.size(); j++) {
+        		final String label = ((ObjectLiteralNode) hashNode.getKey(j)).execute(null).toString();
         		restKeywordLabels.add(label);
         	}
         	
         	for (String kwarg : kwargs) {
         		result[i] = new OptionalKeywordArgMissingNode(context, null);
-        		for (int j = 0; j < hashNode.getKeyValues().length; j += 2) {
-        			final String label = ((ObjectLiteralNode) hashNode.getKeyValues()[j]).execute(null).toString();
+        		for (int j = 0; j < hashNode.size(); j++) {
+        			final String label = ((ObjectLiteralNode) hashNode.getKey(j)).execute(null).toString();
         			
         			if (label.equals(kwarg)) {
-        				result[i] = hashNode.getKeyValues()[j + 1];
+        				result[i] = hashNode.getValue(j);
         				restKeywordLabels.remove(label);
         				break;
         			}
@@ -130,12 +130,12 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
         		RubyNode[] keyValues = new RubyNode[2 * restKeywordLabels.size()];
         		
         		for (String label : restKeywordLabels) {
-        			for (int j = 0; j < hashNode.getKeyValues().length; j += 2) {
-        				final String argLabel = ((ObjectLiteralNode) hashNode.getKeyValues()[j]).execute(null).toString();
+        			for (int j = 0; j < hashNode.size(); j++) {
+        				final String argLabel = ((ObjectLiteralNode) hashNode.getKey(j)).execute(null).toString();
         				
         				if (argLabel.equals(label)) {
-        					keyValues[i++] = hashNode.getKeyValues()[j];
-        					keyValues[i++] = hashNode.getKeyValues()[j + 1];
+        					keyValues[i++] = hashNode.getKey(j);
+        					keyValues[i++] = hashNode.getValue(j);
         				}
         			}
         		}
