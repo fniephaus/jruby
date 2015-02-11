@@ -30,6 +30,7 @@ import org.jruby.truffle.nodes.literal.ObjectLiteralNode;
 import org.jruby.truffle.nodes.literal.StringLiteralNode;
 import org.jruby.truffle.nodes.methods.MarkerNode;
 import org.jruby.truffle.nodes.methods.arguments.MissingKeywordArgumentNode;
+import org.jruby.truffle.nodes.methods.arguments.OptionalKeywordArgMissingNode;
 import org.jruby.truffle.runtime.DebugOperations;
 import org.jruby.truffle.runtime.RubyArguments;
 import org.jruby.truffle.runtime.RubyContext;
@@ -77,11 +78,16 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
     public static RubyNode[] expandedArgumentNodes(RubyContext context, InternalMethod method, RubyNode[] argumentNodes) {
     	final RubyNode[] result;
     	
-        if (method != null && method.getSharedMethodInfo().getKeywordArguments() != null && 
-        		argumentNodes[argumentNodes.length - 1] instanceof HashLiteralNode) {
+        if (method != null && method.getSharedMethodInfo().getKeywordArguments() != null && (
+        				argumentNodes.length == 0 || argumentNodes[argumentNodes.length - 1] instanceof HashLiteralNode)) {
         	List<String> kwargs = method.getSharedMethodInfo().getKeywordArguments();
         	
-        	result = new RubyNode[argumentNodes.length + kwargs.size() + 1];
+        	int countArgNodes = argumentNodes.length + kwargs.size() + 1;
+        	if (argumentNodes.length == 0) {
+        		countArgNodes++;
+        	}
+        	
+        	result = new RubyNode[countArgNodes];
         	int i;
         	
         	for (i = 0; i < argumentNodes.length - 1; ++i) {
@@ -90,7 +96,13 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
         	
         	int firstMarker = i++;
         	result[firstMarker] = new MarkerNode(context, null);
-        	HashLiteralNode hashNode = (HashLiteralNode) argumentNodes[argumentNodes.length - 1];
+        	
+        	HashLiteralNode hashNode;
+        	if (argumentNodes.length > 0) {
+        		hashNode = (HashLiteralNode) argumentNodes[argumentNodes.length - 1];
+        	} else {
+        		hashNode = HashLiteralNode.create(context, null, new RubyNode[0]);
+        	}
         	
         	List<String> restKeywordLabels = new ArrayList<String>();
         	for (int j = 0; j < hashNode.getKeyValues().length; j += 2) {
@@ -99,17 +111,19 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
         	}
         	
         	for (String kwarg : kwargs) {
-        		result[i] = new MissingKeywordArgumentNode(context, null, kwarg);
+        		result[i] = new OptionalKeywordArgMissingNode(context, null);
         		for (int j = 0; j < hashNode.getKeyValues().length; j += 2) {
         			final String label = ((ObjectLiteralNode) hashNode.getKeyValues()[j]).execute(null).toString();
         			
         			if (label.equals(kwarg)) {
-        				result[i++] = hashNode.getKeyValues()[j + 1];
+        				result[i] = hashNode.getKeyValues()[j + 1];
         				restKeywordLabels.remove(label);
         				break;
         			}
         		}
+        		i++;
         	}
+        	result[i++] = new MarkerNode(context, null);
         	
         	if (restKeywordLabels.size() > 0) {
         		i = 0;
@@ -129,8 +143,6 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
         		HashLiteralNode restHash = HashLiteralNode.create(context, null, keyValues);
         		result[firstMarker] = restHash;
         	}
-        	
-        	result[i++] = new MarkerNode(context, null);
         }
         else {
         	result = argumentNodes;

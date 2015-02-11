@@ -10,9 +10,12 @@
 package org.jruby.truffle.nodes.methods.arguments;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.utilities.BranchProfile;
+
 import org.jruby.truffle.nodes.RubyNode;
+import org.jruby.truffle.nodes.methods.MarkerNode;
 import org.jruby.truffle.runtime.RubyArguments;
 import org.jruby.truffle.runtime.RubyContext;
 
@@ -33,10 +36,10 @@ public class ReadOptionalArgumentNode extends RubyNode {
         this.minimum = minimum;
         this.defaultValue = defaultValue;
     }
-
+    
     @Override
     public Object execute(VirtualFrame frame) {
-        if (RubyArguments.getUserArgumentsCount(frame.getArguments()) < minimum) {
+        if (RubyArguments.getNamedUserArgumentsCount(frame.getArguments()) < minimum) {
             defaultValueProfile.enter();
             return defaultValue.execute(frame);
         } else {

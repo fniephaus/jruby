@@ -90,7 +90,15 @@ public final class RubyArguments {
     public static int getUserArgumentsCount(Object[] internalArguments) {
         return internalArguments.length - RUNTIME_ARGUMENT_COUNT;
     }
-
+    
+    public static int getNamedUserArgumentsCount(Object[] internalArguments) {
+    	if (isKwOptimized(internalArguments)) {
+    		return getUserArgumentsCount(internalArguments) - getMethod(internalArguments).getSharedMethodInfo().getKeywordArguments().size() - 1;
+    	} else {
+    		return getUserArgumentsCount(internalArguments);
+    	}
+    }
+    
     public static Object getUserArgument(Object[] internalArguments, int index) {
         return internalArguments[RUNTIME_ARGUMENT_COUNT + index];
     }
