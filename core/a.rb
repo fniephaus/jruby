@@ -18,9 +18,22 @@ def q(foo:1, bar:2)
     foo + bar
 end
 
+def r(a, b=2, c=3, d:, e:5, f:)
+    a+b+c+d+e+f
+end
+
+def s(a, b=2, c:, d:, **rest)
+    a+b+c+d+rest[:e]
+    #rest[:e]
+end
+
+def t(**r)
+    r[:a]+r[:b]
+end
+
 def assert(a, b)
 if a != b
-    puts "error"
+    puts "error: " + a.to_s + "!=" + b.to_s
 end
 end
 
@@ -41,6 +54,9 @@ end
         assert(q(foo:1, bar:2), 3)
         assert(q(foo:1), 3)
         assert(q(), 3)
+        assert(r(1,f:6,d:4), 21)
+        assert(s(1,e:5, f:6,d:4,c:3), 15)
+        assert(t(a:1, b:2, c:3), 3)
     end
     end_time = Time.now
     puts "Time elapsed #{(end_time - beginning_time)*1000} milliseconds"

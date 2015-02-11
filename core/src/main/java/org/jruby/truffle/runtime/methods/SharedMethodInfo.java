@@ -65,19 +65,23 @@ public class SharedMethodInfo {
         
     	if (argsNode.hasKwargs()) {
     		keywordArguments = new ArrayList<String>();
-    		for (Node node : argsNode.getKeywords().childNodes()) {
-    			final KeywordArgNode kwarg = (KeywordArgNode) node;
-    			final AssignableNode assignableNode = kwarg.getAssignable();
-    			
-    			if (assignableNode instanceof LocalAsgnNode) {
-    				keywordArguments.add(((LocalAsgnNode) assignableNode).getName());
-    			} else if (assignableNode instanceof DAsgnNode) {
-    				keywordArguments.add(((DAsgnNode) assignableNode).getName());
-    			} else {
-    				throw new UnsupportedOperationException("unsupported keyword arg " + node);
-    			}
+    		if (argsNode.getKeywords() != null) {
+        		for (Node node : argsNode.getKeywords().childNodes()) {
+        			final KeywordArgNode kwarg = (KeywordArgNode) node;
+        			final AssignableNode assignableNode = kwarg.getAssignable();
+        			
+        			if (assignableNode instanceof LocalAsgnNode) {
+        				keywordArguments.add(((LocalAsgnNode) assignableNode).getName());
+        			} else if (assignableNode instanceof DAsgnNode) {
+        				keywordArguments.add(((DAsgnNode) assignableNode).getName());
+        			} else {
+        				throw new UnsupportedOperationException("unsupported keyword arg " + node);
+        			}
+        		}
+        		countKwArgs = keywordArguments.size();
+    		} else {
+    			countKwArgs = 0;
     		}
-    		countKwArgs = keywordArguments.size();
     	} else {
     		keywordArguments = null;
     		countKwArgs = 0;

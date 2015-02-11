@@ -11,7 +11,10 @@ package org.jruby.truffle.nodes.methods.arguments;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
+
 import org.jruby.truffle.nodes.RubyNode;
+import org.jruby.truffle.nodes.literal.HashLiteralNode;
+import org.jruby.truffle.nodes.methods.MarkerNode;
 import org.jruby.truffle.runtime.RubyArguments;
 import org.jruby.truffle.runtime.RubyContext;
 import org.jruby.truffle.runtime.core.RubyHash;
@@ -25,15 +28,32 @@ public class ReadKeywordRestArgumentNode extends RubyNode {
 
     private final int minimum;
     private final String[] excludedKeywords;
-
-    public ReadKeywordRestArgumentNode(RubyContext context, SourceSection sourceSection, int minimum, String[] excludedKeywords) {
+    private final int kwIndex;
+    
+    public ReadKeywordRestArgumentNode(RubyContext context, SourceSection sourceSection, int minimum, String[] excludedKeywords, int kwIndex) {
         super(context, sourceSection);
         this.minimum = minimum;
         this.excludedKeywords = excludedKeywords;
+        this.kwIndex = kwIndex;
     }
 
     @Override
     public Object execute(VirtualFrame frame) {
+    	if (RubyArguments.isKwOptimized(frame.getArguments())) {
+    		Object restHash = RubyArguments.getOptimizedKeywordArgument(frame.getArguments(), kwIndex);
+    		
+    		if (restHash instanceof MarkerNode.Marker) {
+    			// no rest keyword args hash passed	
+    			return HashLiteralNode.create(getContext(), null, new RubyNode[0]).execute(frame);
+    		} else {
+    			return restHash;
+    		}
+    	} else {
+    		return lookupRestKeywordArgumentHash(frame);
+    	}
+    }
+
+    private Object lookupRestKeywordArgumentHash(VirtualFrame frame) {
         notDesignedForCompilation();
 
         final RubyHash hash = getKeywordsHash(frame);
@@ -56,7 +76,7 @@ public class ReadKeywordRestArgumentNode extends RubyNode {
 
         return HashOperations.verySlowFromEntries(getContext(), entries);
     }
-
+    
     private RubyHash getKeywordsHash(VirtualFrame frame) {
         // TODO(CS): duplicated in ReadKeywordArgumentNode
 

@@ -151,6 +151,10 @@ public class ArgsNode extends Node {
 
     public int countKeywords() {
     	if (hasKwargs) {
+    		if (keywords == null) {
+    			// rest kw args
+    			return 0;
+    		}
     		return keywords.size();
     	} else {
     		return 0;

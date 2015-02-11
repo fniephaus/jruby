@@ -12,6 +12,7 @@ package org.jruby.truffle.translator;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
+
 import org.jruby.ast.RequiredKeywordArgumentValueNode;
 import org.jruby.ast.StarNode;
 import org.jruby.ast.types.INameNode;
@@ -156,7 +157,7 @@ public class LoadArgumentsTranslator extends Translator {
     public RubyNode visitKeywordRestArgNode(org.jruby.ast.KeywordRestArgNode node) {
         final SourceSection sourceSection = translate(node.getPosition());
 
-        final RubyNode readNode = new ReadKeywordRestArgumentNode(context, sourceSection, required, excludedKeywords.toArray(new String[excludedKeywords.size()]));
+        final RubyNode readNode = new ReadKeywordRestArgumentNode(context, sourceSection, required, excludedKeywords.toArray(new String[excludedKeywords.size()]), -countKwArgs - 1);
         final FrameSlot slot = methodBodyTranslator.getEnvironment().getFrameDescriptor().findOrAddFrameSlot(node.getName());
 
         return WriteLocalVariableNodeFactory.create(context, sourceSection, slot, readNode);
@@ -202,8 +203,8 @@ public class LoadArgumentsTranslator extends Translator {
         excludedKeywords.add(name);
 
         final RubyNode readNode = new ReadKeywordArgumentNode(context, sourceSection, required, name, defaultValue, kwIndex - countKwArgs);
-        final FrameSlot slot = methodBodyTranslator.getEnvironment().getFrameDescriptor().findFrameSlot(name);
-
+        final FrameSlot slot = methodBodyTranslator.getEnvironment().getFrameDescriptor().findOrAddFrameSlot(name);
+        
         return WriteLocalVariableNodeFactory.create(context, sourceSection, slot, readNode);
     }
 
