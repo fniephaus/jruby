@@ -260,6 +260,10 @@ public class ArgsNode extends Node {
         return keyRest;
     }
 
+    public boolean hasKeyRest() {
+    	return keyRest != null;
+    }
+    
     public void checkArgCount(Ruby runtime, int argsLength) {
         Arity.checkArgumentCount(runtime, argsLength, requiredArgsCount, maxArgsCount, hasKwargs);
     }

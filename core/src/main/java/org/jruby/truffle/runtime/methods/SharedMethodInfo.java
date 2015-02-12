@@ -90,7 +90,7 @@ public class SharedMethodInfo {
     private static Arity getArity(org.jruby.ast.ArgsNode argsNode) {
         final int minimum = argsNode.getRequiredArgsCount();
         final int maximum = argsNode.getMaxArgumentsCount();
-        return new Arity(minimum, argsNode.getOptionalArgsCount(), maximum == -1, argsNode.hasKwargs(), argsNode.countKeywords());
+        return new Arity(minimum, argsNode.getOptionalArgsCount(), maximum == -1, argsNode.hasKwargs(), argsNode.hasKeyRest(), argsNode.countKeywords());
     }
     
     public Arity getArity() {

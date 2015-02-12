@@ -31,6 +31,7 @@ import org.jruby.truffle.nodes.literal.StringLiteralNode;
 import org.jruby.truffle.nodes.methods.MarkerNode;
 import org.jruby.truffle.nodes.methods.arguments.MissingKeywordArgumentNode;
 import org.jruby.truffle.nodes.methods.arguments.OptionalKeywordArgMissingNode;
+import org.jruby.truffle.nodes.methods.arguments.UnknownArgumentErrorNode;
 import org.jruby.truffle.runtime.DebugOperations;
 import org.jruby.truffle.runtime.RubyArguments;
 import org.jruby.truffle.runtime.RubyContext;
@@ -75,7 +76,7 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
                 isSplatted);
     }
     
-    public static RubyNode[] expandedArgumentNodes(RubyContext context, InternalMethod method, RubyNode[] argumentNodes) {
+    public static RubyNode[] expandedArgumentNodes(RubyContext context, InternalMethod method, RubyNode[] argumentNodes, boolean isSplatted) {
     	final RubyNode[] result;
     	
     	boolean shouldExpand = true;
@@ -89,6 +90,10 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
     	}
     	else if (method.getSharedMethodInfo().getArity() == null ||
     			method.getSharedMethodInfo().getArity().getRequired() >= argumentNodes.length) {
+    		shouldExpand = false;
+    	} else if (isSplatted || method.getSharedMethodInfo().getArity().allowsMore()) {
+    		// TODO: make optimization work if splat arguments are involed
+    		// the problem is that Markers and keyword args are used when reading splatted args
     		shouldExpand = false;
     	}
     	
@@ -138,7 +143,10 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
         	}
         	result[i++] = new MarkerNode(context, null);
         	
-        	if (restKeywordLabels.size() > 0) {
+        	if (restKeywordLabels.size() > 0 && !method.getSharedMethodInfo().getArity().hasKeyRest()) {
+        		result[firstMarker] = new UnknownArgumentErrorNode(context, null, restKeywordLabels.get(0));
+        	}
+        	else if (restKeywordLabels.size() > 0) {
         		i = 0;
         		RubyNode[] keyValues = new RubyNode[2 * restKeywordLabels.size()];
         		
@@ -178,7 +186,7 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
             DispatchAction dispatchAction,
             RubyNode[] argumentNodes,
             boolean isSplatted) {
-        super(context, cachedName, next, indirect, dispatchAction, expandedArgumentNodes(context, method, argumentNodes), isSplatted);
+        super(context, cachedName, next, indirect, dispatchAction, expandedArgumentNodes(context, method, argumentNodes, isSplatted), isSplatted);
 
         this.expectedClass = expectedClass;
         this.unmodifiedAssumption = unmodifiedAssumption;
