@@ -78,8 +78,21 @@ public class CachedBoxedDispatchNode extends CachedDispatchNode {
     public static RubyNode[] expandedArgumentNodes(RubyContext context, InternalMethod method, RubyNode[] argumentNodes) {
     	final RubyNode[] result;
     	
-        if (method != null && method.getSharedMethodInfo().getKeywordArguments() != null && (
-        				argumentNodes.length == 0 || argumentNodes[argumentNodes.length - 1] instanceof HashLiteralNode)) {
+    	boolean shouldExpand = true;
+    	if (method == null || method.getSharedMethodInfo().getKeywordArguments() == null) {
+    		// no keyword arguments in method definition
+    		shouldExpand = false;
+    	}
+    	else if (argumentNodes.length != 0 && !(argumentNodes[argumentNodes.length - 1] instanceof HashLiteralNode)) {
+    		// last argument is not a Hash that could be expanded
+    		shouldExpand = false;
+    	}
+    	else if (method.getSharedMethodInfo().getArity() == null ||
+    			method.getSharedMethodInfo().getArity().getRequired() >= argumentNodes.length) {
+    		shouldExpand = false;
+    	}
+    	
+        if (shouldExpand) {
         	List<String> kwargs = method.getSharedMethodInfo().getKeywordArguments();
         	
         	int countArgNodes = argumentNodes.length + kwargs.size() + 1;

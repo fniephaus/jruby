@@ -36,7 +36,7 @@ public class SharedMethodInfo {
     private final org.jruby.ast.Node parseTree;
     private final boolean alwaysSplit;
     private final List<String> keywordArguments;
-    private final int countKwArgs;
+    private final Arity arity;
     
     public SharedMethodInfo(SourceSection sourceSection, LexicalScope lexicalScope, String name, boolean isBlock, org.jruby.ast.Node parseTree, boolean alwaysSplit) {
         assert sourceSection != null;
@@ -48,8 +48,8 @@ public class SharedMethodInfo {
         this.isBlock = isBlock;
         this.parseTree = parseTree;
         this.alwaysSplit = alwaysSplit;
-        keywordArguments = null;
-        countKwArgs = 0;
+        this.keywordArguments = null;
+        this.arity = null;
     }
     
     public SharedMethodInfo(SourceSection sourceSection, LexicalScope lexicalScope, String name, boolean isBlock, org.jruby.ast.Node parseTree, boolean alwaysSplit, ArgsNode argsNode) {
@@ -78,14 +78,23 @@ public class SharedMethodInfo {
         				throw new UnsupportedOperationException("unsupported keyword arg " + node);
         			}
         		}
-        		countKwArgs = keywordArguments.size();
-    		} else {
-    			countKwArgs = 0;
-    		}
+    		} 
     	} else {
     		keywordArguments = null;
-    		countKwArgs = 0;
     	}
+    	
+    	this.arity = getArity(argsNode);
+    }
+    
+    // TODO: copied from MethodTranslator
+    private static Arity getArity(org.jruby.ast.ArgsNode argsNode) {
+        final int minimum = argsNode.getRequiredArgsCount();
+        final int maximum = argsNode.getMaxArgumentsCount();
+        return new Arity(minimum, argsNode.getOptionalArgsCount(), maximum == -1, argsNode.hasKwargs(), argsNode.countKeywords());
+    }
+    
+    public Arity getArity() {
+    	return arity;
     }
     
     public SourceSection getSourceSection() {
